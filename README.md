@@ -12,7 +12,7 @@
 - **Communication**: Hono RPC (타입 자동완성 지원)
 
 ## 백엔드(API) 만들 때
-app/api/[[...route]]/route.ts 파일에 아래처럼 경로만 추가해.
+app/api/[[...route]]/route.ts 파일에 아래처럼 경로만 추가해주세요.
 
 ```typescript
 const routes = app
@@ -38,10 +38,15 @@ console.log(user.name) // 'user.'만 쳐도 name이 목록에 나옴!
 베셀에 배포할때 install command 대신 bun install 
 build command 대신 bun run build로 설정
 
+
 ## RPC pattern : 장점들
 1.타입자동완성 + 에러자동탐지
+
 2.name을 nickname 으로 바꾸면 에러위치를 보여줌 
+
 3.json 구조 자동파악 res.json() 다음에 .찍으면 서버가 보내주는 데이터 다알려줘서 api명세서 안봐도 데이터 타입파악가능 
+
 4.export type AppType = typeof routes 만으로 백앤드와 프론트엔드 연결 
 
-"백엔드 코드가 곧 프론트엔드의 가이드라인이 되어, 소통 에러를 제로(0)로 만드는 기술" 
+
+백엔드 코드가 곧 프론트엔드의 가이드라인이 되어, 소통 에러를 제로(0)로 만드는 기술
