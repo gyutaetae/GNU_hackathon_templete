@@ -1,7 +1,7 @@
 # 멋쟁이 사자 GNU팀 해커톤 템플릿
 
 ## 빠른 시작
-1. 저장소 클론: `git clone <우리-레포-주소>`
+1. 저장소 클론: `git clone https://github.com/gyutaetae/GNU_hackathon_templete`
 2. 패키지 설치: `bun install` (npm보다 10배 빠름!)
 3. 개발 서버 실행: `bun dev`
 
