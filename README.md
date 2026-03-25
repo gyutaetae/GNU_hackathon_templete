@@ -51,7 +51,7 @@ build command 대신 bun run build로 설정
 
 4.export type AppType = typeof routes 만으로 백앤드와 프론트엔드 연결 
 
-5. Edge Rub=ntime 의 속도 : export const runtime = 'edge' 설정으로 반응속도가 빛의 속도임을 어필가능  
+5. Edge Runtime 의 속도 : export const runtime = 'edge' 설정으로 반응속도가 빛의 속도임을 어필가능  
 
 백엔드 코드가 곧 프론트엔드의 가이드라인이 되어, 소통 에러를 제로(0)로 만드는 기술
 

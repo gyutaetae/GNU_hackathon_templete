@@ -7,12 +7,16 @@ export const runtime = 'edge'
 const app = new Hono().basePath('/api')
 
 // 샘플 API
-const routes = app.get('/hello', (c) => {
-  return c.json({
-    message: 'Hello from Hono!',
-    speed: 'Ultra Fast ⚡️'
+const routes = app
+  .get('/hello', (c) => {
+    return c.json({
+      message: 'Hello from Hono!',
+      speed: 'Ultra Fast ⚡️'
+    })
   })
-})
+  .post('/user', (c) => {
+    return c.json({ id: 1, name: '멋사' })
+  })
 
 // 타입 공유를 위해 export
 export type AppType = typeof routes
