@@ -10,6 +10,9 @@
 - **Frontend**: Next.js 14 (App Router)
 - **Backend**: Hono (Edge 최적화)
 - **Communication**: Hono RPC (타입 자동완성 지원)
+- **Database/Auth**: supabase 로그인, DB 서버
+- **ORM** : Drizzle Bun환경에서 가장 가볍고 수파베이스와 궁합이좋음 
+- **UI/UX** : shadcn/ui + Tailwind 
 
 ## 백엔드(API) 만들 때
 app/api/[[...route]]/route.ts 파일에 아래처럼 경로만 추가해주세요.
