@@ -115,17 +115,16 @@ await db.insert(posts).values({ title: '제목', authorId: user.id })
 백엔드 코드가 곧 프론트엔드의 가이드라인이 되어, 소통 에러를 제로(0)로 만드는 기술
 
 ## 생성과정
-bun create next-app@latest
 
-bun add hono @hono/zod0validator zod
+1. Next.js 프로젝트 생성 (Bun 사용)
+bun create next-app my-hackathon-app --tailwind --typescript --eslint
 
-bun add @supabase/supabase-js @supabase/ssr
+2. 핵심 라이브러리 한 번에 설치
+bun add hono @lucia-auth/adapter-postgresql drizzle-orm @supabase/supabase-js
+bun add -d drizzle-kit @types/bun
 
-bun add @drizzle-orm postgres
-
-bun add -d drizzle-kit 
-
-bunx shadcn@latest init 
+3. UI 컴포넌트 라이브러리 초기화 (shadcn/ui)
+bunx shadcn-ui@latest init
 
 route.ts 에 hono 서버를 심음 : next.js에서 api가 돌아가게 만듦
 
