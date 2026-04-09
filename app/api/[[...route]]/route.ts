@@ -29,16 +29,16 @@ const routes = app.post(
     messages,
   });
 
-  return result.toUIMessageStreamResponse(c.env.AI);
-}
-.get('hello/'(c)=> {
+  return result.toDataStreamResponse();
+})
+.get('/hello', (c) => {
   return c.json({
     message: " hello",
     count: 2024,
     status: "success"
   })
 })
-)
+
 
 // 타입 공유를 위해 export
 export type AppType = typeof routes
