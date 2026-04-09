@@ -143,3 +143,5 @@ next.config.ts : next.js 동작 방식 제어
 next-env.d.ts : next.js 타입 정의 파일 (자동으로 생성됨) postcss.config.mjs : postCSS 가 Tailwind CSS를 가공해줌
 
 tsconfig.json : 타입스크립트 컴파일 관련 규칙 eslint.config.mjs : 코드 보안관 오타가 날법한 코드를 잡아내서 노란색/빨간색 줄을 띄워줌
+
+bun db:push 명령어 하나로 DB를 생성가능 
