@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { client } from '@/lib/api'
+import { client } from '@/lib/rpc'
 
 export default function Home() {
   const [data, setData] = useState<string>('로딩 중...')
