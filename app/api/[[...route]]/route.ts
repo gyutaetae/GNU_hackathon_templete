@@ -1,15 +1,20 @@
-import { streamText } from 'ai';
-import { openai } from '@ai-sdk/openai'
 import { Hono } from 'hono'
 import { handle } from 'hono/vercel'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
+import { db } from '@/drizzle/index'
+import { users } from '@/drizzle/schema'
+import { createClient} from '@/lib/supabase/server'
 import { appRouterContext } from 'next/dist/server/route-modules/app-route/shared-modules';
 
-// 이 부분이 핵심! 나중에 프론트에서 이 타입을 그대로 수입해서 씁니다.
+// 엣지런타입 사용 
 export const runtime = 'edge'
 
 const app = new Hono().basePath('/api')//api로 시작하는 모든 요청을 처리할거야 
+const userSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(10).max(32)
+})
 
 // 임시 데이터 (메모리 저장소)
 let tasks = [
@@ -24,7 +29,7 @@ const taskSchema = z.object({
 
 const routes = app
   .get('/hello', (c) => {
-    return c.json({ message: "안녕! 실습을 시작해보자!" })
+    return c.json({ message: "안녕! " })
   })
   .get('/tasks', (c) => {
     return c.json({ tasks })
@@ -51,6 +56,33 @@ const routes = app
     return c.json({ message: 'deleted' })
   })
 
+  //로그인register post
+  .post('/register', zValidator('json', userSchema), async (c) => {
+    const data = c.req.valid('json')
+    return c.json({ success: true, message: 'User registered successfully'})
+  })
+
+  //인증 추가 
+  .post('/protected', async (c)=> {
+    const supabase =await createClient()
+    const {data: {user}}=await supabase.auth.getUser()
+
+    if (!user) return c.json({erroe: '인증 필요'}, 401)
+    return c.json({ user })
+  })
+
+  //에러 처리 
+  .post('/create', zValidator('json', taskSchema), async (c) => {
+    try {
+      const data = c.req.valid('json')
+      // DB에 저장하는 로직 여기 추가
+      return c.json({ success: true, data }, 201)
+    } catch (error: any) {
+      return c.json({ error: error.message || 'Server error' }, 500)
+    }
+  })
+
+  
 // 타입 공유를 위해 export
 export type AppType = typeof routes
 
