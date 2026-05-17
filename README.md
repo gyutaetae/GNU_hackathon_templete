@@ -1,147 +1,71 @@
-# 멋쟁이 사자 GNU팀 해커톤 템플릿
+# AI로 영수증지옥을 없앤다면
 
-## 빠른 시작
-1. 저장소 클론: `git clone https://github.com/gyutaetae/GNU_hackathon_templete`
-2. 패키지 설치: `bun install` (npm보다 10배 빠름!)
-3. cp .env.local.example .env.local
-4. .env.local 열어서 Supabase 값 채우기
-5. 개발 서버 실행: `bun dev`
+[서비스 주소](https://github.com/gyutaetae/GNU_hackathon_templete)
 
-## 환경변수 설정 (.env.local)
-Supabase 대시보드 > Settings > API 에서 복사
+영수증은 작고 사소해 보이지만, 막상 모이면 꽤 큰 피로가 됩니다. 사진첩에 쌓인 영수증, 메신저로 받은 결제 내역, 종이로 받은 지출 증빙을 다시 정리하다 보면 돈을 쓴 시간보다 정리하는 시간이 더 길게 느껴질 때가 있습니다.
 
-## Hono RPC — 백엔드 API
+이 프로젝트는 그 반복을 줄이기 위해 시작했습니다. 누군가에게 보여주기 위한 아이디어라기보다, 실제로 영수증과 지출 기록을 정리해야 하는 사람이 매번 같은 일을 하지 않도록 만드는 서비스입니다.
 
-`app/api/[[...route]]/route.ts` 에 경로 추가:
+## 만들고 싶은 경험
 
-```typescript
-const routes = app
-  .get('/hello', (c) => c.json({ message: 'Hello!' }))
-  .post('/user', zValidator('json', schema), async (c) => {
-    const body = c.req.valid('json')
-    return c.json({ id: 1, name: body.name })
-  })
-```
+사용자는 영수증을 하나씩 들여다보며 날짜, 가게 이름, 금액, 품목을 옮겨 적지 않아도 됩니다. AI가 영수증에서 필요한 정보를 먼저 읽고, 사용자는 잘못된 부분만 확인하거나 수정하면 됩니다.
 
-프론트에서 호출 (타입 자동완성):
+목표는 거창한 자동화가 아니라, 영수증 정리에서 가장 귀찮고 반복적인 부분을 덜어내는 것입니다.
 
-```typescript
-import { client } from '@/lib/api'
+## 핵심 문제
 
-const res = await client.api.hello.$get()
-const data = await res.json()
-// data.message — 자동완성 됨
-```
+- 영수증과 결제 내역은 여러 곳에 흩어져 있습니다.
+- 정산이나 증빙이 필요할 때마다 다시 찾아보고 다시 입력해야 합니다.
+- 수기로 정리하면 빠뜨리거나 잘못 적는 일이 생깁니다.
+- 작은 지출일수록 정리하지 않고 넘어가지만, 나중에는 전체 흐름을 보기 어렵습니다.
 
----
+## 서비스 방향
 
-## Supabase Auth
+- 영수증 이미지에서 날짜, 상호, 금액, 품목을 추출합니다.
+- 사용자가 확인하기 쉬운 형태로 정리합니다.
+- 개인 지출, 팀 정산, 프로젝트 비용 기록에 활용할 수 있게 합니다.
+- 나중에는 카테고리 분류, 검색, 월별 요약까지 자연스럽게 이어지도록 확장합니다.
 
-```typescript
-// 클라이언트 컴포넌트
-import { createClient } from '@/lib/supabase/client'
+## 현재 구현
 
-const supabase = createClient()
+현재 저장소는 서비스의 기반이 되는 웹 애플리케이션입니다. Next.js 기반으로 화면과 API 구조를 만들고, 사용자 인증과 데이터 저장을 붙일 수 있는 형태로 구성했습니다.
 
-// 회원가입
-await supabase.auth.signUp({ email, password })
+- Next.js App Router
+- Hono 기반 API 라우팅
+- Supabase 인증 연동 구조
+- Drizzle ORM 기반 데이터베이스 구성
+- 작업 목록 생성, 조회, 수정, 삭제 흐름
 
-// 로그인
-await supabase.auth.signInWithPassword({ email, password })
+아직 완성된 제품이라기보다, 영수증 정리 서비스로 확장하기 위한 뼈대를 잡아 둔 상태입니다. 중요한 것은 단순히 데모를 만드는 것이 아니라, 실제로 계속 붙잡고 개선할 수 있는 구조를 먼저 만드는 것이었습니다.
 
-// 로그아웃
-await supabase.auth.signOut()
-```
+## 기술 스택
 
-```typescript
-// 서버 컴포넌트 / Route Handler
-import { createClient } from '@/lib/supabase/server'
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Hono
+- Supabase
+- Drizzle ORM
+- Bun
 
-const supabase = await createClient()
-const { data: { user } } = await supabase.auth.getUser()
-```
-
----
-
-## Drizzle ORM
-
-스키마 수정 후 DB에 반영:
+## 실행 방법
 
 ```bash
-bun db:push        # 개발 중 빠르게 반영 (마이그레이션 파일 없이)
-bun db:generate    # 마이그레이션 파일 생성
-bun db:migrate     # 마이그레이션 실행
-bun db:studio      # Drizzle Studio (DB GUI)
+bun install
+cp .env_example .env
+bun dev
 ```
 
-쿼리 예시:
+Supabase를 사용하는 경우 `.env`에 다음 값을 채워야 합니다.
 
-```typescript
-import { db } from '@/db'
-import { users, posts } from '@/db/schema'
-import { eq } from 'drizzle-orm'
-
-// 전체 조회
-const allUsers = await db.select().from(users)
-
-// 조건 조회
-const user = await db.select().from(users).where(eq(users.id, userId))
-
-// 삽입
-await db.insert(posts).values({ title: '제목', authorId: user.id })
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
----
+## 왜 이걸 만들었는가
 
-## Vercel 배포 꿀팁
+영수증 정리는 아무도 하고 싶어 하지 않지만, 누군가는 결국 해야 하는 일입니다. 비용 처리를 하든, 개인 지출을 돌아보든, 팀 프로젝트 정산을 하든 마지막에는 늘 영수증을 다시 확인하게 됩니다.
 
-- 베셀에 배포할때 install command 대신 bun install 빌드시간 비약적으로 단축
-
-- build command 대신 bun run build로 설정
-
-- 환경변수 3개 Vercel 대시보드에 동일하게 추가 필수
-
-## PC pattern : 장점들
-1.타입자동완성 + 에러자동탐지 @hono/zod-validator를 쓰면 잘못된 데이터를 보냈을 때 클라이언트가 백엔드에서 자동으로 에러를 잡아줌
-
-2.name을 nickname 으로 바꾸면 에러위치를 보여줌
-
-3.json 구조 자동파악 res.json() 다음에 .찍으면 서버가 보내주는 데이터 다알려줘서 api명세서 안봐도 데이터 타입파악가능
-
-4.export type AppType = typeof routes 만으로 백앤드와 프론트엔드 연결
-
-5.Edge Runtime 의 속도 : export const runtime = 'edge' 설정으로 반응속도가 빛의 속도임을 어필가능
-
-백엔드 코드가 곧 프론트엔드의 가이드라인이 되어, 소통 에러를 제로(0)로 만드는 기술
-
-## 생성과정
-
-1. Next.js 프로젝트 생성 (Bun 사용)
-bun create next-app my-hackathon-app --tailwind --typescript --eslint
-
-2. 핵심 라이브러리 한 번에 설치
-bun add hono @lucia-auth/adapter-postgresql drizzle-orm @supabase/supabase-js
-bun add -d drizzle-kit @types/bun
-
-3. UI 컴포넌트 라이브러리 초기화 (shadcn/ui)
-bunx shadcn-ui@latest init
-
-route.ts 에 hono 서버를 심음 : next.js에서 api가 돌아가게 만듦
-
-api.ts에 client를 정의 : 백앤드 타입을 프론트에드가 실시간으로 인지하게 (RPC) 설정
-
-## 핵심폴더
-app/ : Next.js 메인폴더 page.tsx : 첫 페이지 route.ts : 백엔드 모든 api 관리 layout.tsx : 모든 페이지에 적용되는 공통 레이아웃 ( 헤더, 푸터 ) gloabls.css : tailwind css 설정 및 공통 스타일
-
-lib/ : 전역에서 쓰이는 함수 모음(api.ts) api.ts 프론트에서 백엔드를 호출할때 쓰는 client 객체정의 public/ : 이미지, 폰트 등 정적 파일들이 들어감 node_modules/ : bun install로 생성된 라이브러리들 .next/ : 자동생성된 빌드 결과물들 bun dev, bun run build 할때마다 자동으로 갱신됨
-
-프로젝트 폴더 AGENTS.md : ai 어이스턴트에게 주는 지침서 CLAUDE.md : 클로드에게 주는 지침서
-
-package.json : 프로젝트 설정 파일 bun.lock : 번 패키지 잠금 파일
-
-next.config.ts : next.js 동작 방식 제어
-next-env.d.ts : next.js 타입 정의 파일 (자동으로 생성됨) postcss.config.mjs : postCSS 가 Tailwind CSS를 가공해줌
-
-tsconfig.json : 타입스크립트 컴파일 관련 규칙 eslint.config.mjs : 코드 보안관 오타가 날법한 코드를 잡아내서 노란색/빨간색 줄을 띄워줌
-
-bun db:push 명령어 하나로 DB를 생성가능 
+이 서비스는 그 순간의 귀찮음을 줄이기 위한 도구입니다. AI가 대신 읽고, 사람은 판단만 하는 흐름을 만들면 영수증은 더 이상 정리해야 할 짐이 아니라 바로 쓸 수 있는 기록이 될 수 있습니다.
