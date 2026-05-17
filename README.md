@@ -1,147 +1,141 @@
-# 멋쟁이 사자 GNU팀 해커톤 템플릿
+# Daon: AI 영수증 정리 서비스
 
-## 빠른 시작
-1. 저장소 클론: `git clone https://github.com/gyutaetae/GNU_hackathon_templete`
-2. 패키지 설치: `bun install` (npm보다 10배 빠름!)
-3. cp .env.local.example .env.local
-4. .env.local 열어서 Supabase 값 채우기
-5. 개발 서버 실행: `bun dev`
+Daon은 영수증, 결제 내역, 지출 증빙을 AI가 먼저 읽고 정리해 주는 서비스입니다. 사용자는 종이 영수증이나 결제 캡처를 올리고, AI가 추출한 날짜, 상호, 금액, 품목, 카테고리만 확인하면 됩니다.
 
-## 환경변수 설정 (.env.local)
-Supabase 대시보드 > Settings > API 에서 복사
+아이디어톤에서 이 프로젝트의 핵심은 "OCR 기술을 보여주는 것"이 아니라, 아무도 하고 싶어 하지 않지만 조직 안에서는 반드시 반복되는 비용 정리 문제를 줄이는 비즈니스 가치입니다.
 
-## Hono RPC — 백엔드 API
+## 한 줄 피치
 
-`app/api/[[...route]]/route.ts` 에 경로 추가:
+> Daon은 흩어진 영수증을 바로 쓸 수 있는 비용 데이터로 바꿔, 개인과 팀의 정산 시간을 줄이는 AI 비용 정리 도구입니다.
 
-```typescript
-const routes = app
-  .get('/hello', (c) => c.json({ message: 'Hello!' }))
-  .post('/user', zValidator('json', schema), async (c) => {
-    const body = c.req.valid('json')
-    return c.json({ id: 1, name: body.name })
-  })
-```
+## 문제 설정
 
-프론트에서 호출 (타입 자동완성):
+영수증 정리는 작아 보이지만 반복될수록 큰 운영 비용이 됩니다.
 
-```typescript
-import { client } from '@/lib/api'
+- 개인은 소비 기록을 남기고 싶어도 입력이 번거로워 포기합니다.
+- 팀 프로젝트나 동아리는 정산 시즌마다 영수증 수집, 누락 확인, 금액 검증에 시간을 씁니다.
+- 소상공인과 프리랜서는 증빙 자료를 모아야 하지만, 자료가 사진첩, 메신저, 이메일에 흩어집니다.
+- 수기 입력은 느리고, 누락과 오타가 생기며, 나중에 다시 검토해야 합니다.
 
-const res = await client.api.hello.$get()
-const data = await res.json()
-// data.message — 자동완성 됨
-```
+우리가 문제를 비튼 지점은 "영수증을 잘 보관하자"가 아니라 "영수증이 들어오는 순간 바로 데이터가 되게 하자"입니다. 보관함을 더 예쁘게 만드는 것이 아니라, 영수증이라는 비정형 자료를 비용 의사결정에 바로 쓸 수 있는 구조화 데이터로 바꾸는 데 초점을 둡니다.
 
----
+## 해결 방식
 
-## Supabase Auth
+1. 사용자가 영수증 이미지나 결제 캡처를 업로드합니다.
+2. AI가 날짜, 상호, 총액, 품목, 결제 수단을 추출합니다.
+3. 사용자는 틀린 부분만 확인하고 수정합니다.
+4. Daon이 지출을 카테고리별로 정리하고, 팀 정산이나 월별 리포트로 연결합니다.
 
-```typescript
-// 클라이언트 컴포넌트
-import { createClient } from '@/lib/supabase/client'
+이 흐름의 핵심은 완전 자동화가 아닙니다. AI가 초안을 만들고 사람이 검수하는 구조라서 실제 업무에 적용하기 쉽고, 오류 리스크도 낮출 수 있습니다.
 
-const supabase = createClient()
+## 비즈니스 가치
 
-// 회원가입
-await supabase.auth.signUp({ email, password })
+- 시간 절감: 영수증 1장당 수기 입력과 확인 시간을 줄입니다.
+- 누락 감소: 메신저, 사진첩, 종이 영수증에 흩어진 자료를 한곳에 모읍니다.
+- 정산 신뢰도 향상: 금액, 날짜, 품목이 구조화되어 팀원 간 확인 비용이 줄어듭니다.
+- 확장성: 개인 가계부, 팀 정산, 프리랜서 비용 증빙, 소상공인 지출 관리로 확장할 수 있습니다.
+- 데이터 자산화: 단순 이미지였던 영수증이 검색, 분석, 리포트 가능한 비용 데이터가 됩니다.
 
-// 로그인
-await supabase.auth.signInWithPassword({ email, password })
+## 아이디어톤 발표에서 강조할 점
 
-// 로그아웃
-await supabase.auth.signOut()
-```
+### 1. 문제를 크게 보이게 만들기
 
-```typescript
-// 서버 컴포넌트 / Route Handler
-import { createClient } from '@/lib/supabase/server'
+발표 시작은 기술 설명보다 "정산할 때 누구나 겪는 장면"으로 여는 것이 좋습니다.
 
-const supabase = await createClient()
-const { data: { user } } = await supabase.auth.getUser()
-```
+- 단체 활동 후 카카오톡에 영수증 사진이 쌓이는 상황
+- 누가 얼마를 냈는지 다시 물어보는 상황
+- 엑셀에 날짜, 상호, 금액을 다시 입력하는 상황
+- 영수증 하나가 빠져 전체 정산이 늦어지는 상황
 
----
+심사위원이 "나도 겪어봤다"고 느끼면 이후 기술 설명보다 비즈니스 가치가 더 잘 전달됩니다.
 
-## Drizzle ORM
+### 2. 기술보다 전환 효과 말하기
 
-스키마 수정 후 DB에 반영:
+데모에서 보여줄 문장은 "AI가 OCR을 합니다"보다 "사진 한 장이 바로 정산 가능한 데이터가 됩니다"가 더 강합니다.
+
+강조 문장:
+
+- "Daon은 영수증 보관 서비스가 아니라 비용 데이터 전환 서비스입니다."
+- "사용자는 입력하지 않고 확인만 합니다."
+- "정산은 기록을 모으는 일이 아니라, 이미 정리된 데이터를 승인하는 일이 됩니다."
+
+### 3. 문제 해결 과정을 비틀어 설명하기
+
+일반적인 접근은 "영수증을 잘 찍고 저장한다"입니다. Daon의 접근은 "영수증을 다시 볼 필요가 없게 만든다"입니다.
+
+이 차이를 발표에서 명확히 말하면 와우 포인트가 생깁니다.
+
+## 데모 시나리오
+
+피칭 중 데모는 짧고 확실해야 합니다. 기술의 모든 기능을 보여주기보다, 전후 차이를 60초 안에 보여주는 것이 좋습니다.
+
+1. Before 화면: 흩어진 영수증과 수기 정산 표를 보여줍니다.
+2. 업로드: 영수증 이미지 1장을 넣는 장면을 보여줍니다.
+3. AI 추출 결과: 날짜, 상호, 금액, 품목, 카테고리가 자동으로 채워진 화면을 보여줍니다.
+4. 사용자 확인: 잘못된 항목 하나만 수정하거나 승인합니다.
+5. After 화면: "정산 준비 완료", "카테고리별 지출", "팀원별 청구 금액"처럼 바로 쓸 수 있는 결과를 보여줍니다.
+
+데모 멘트 예시:
+
+> 지금까지는 영수증을 보고 사람이 엑셀을 채웠습니다. Daon에서는 반대로 AI가 먼저 표를 만들고, 사람은 확인만 합니다. 그래서 정산의 병목이 입력에서 검수로 바뀝니다.
+
+## 와우 포인트
+
+- 영수증 사진이 곧바로 비용 데이터가 되는 순간
+- 사람이 직접 입력하지 않아도 표가 채워지는 경험
+- 개인 지출 기록에서 팀 정산, 소상공인 증빙까지 이어지는 확장성
+- "기술 시연"이 아니라 실제 돈과 시간을 줄이는 운영 도구라는 점
+
+## 심사위원 질문 대비
+
+**Q. 기존 가계부 앱과 무엇이 다른가요?**  
+기존 앱은 사용자가 거래를 입력하거나 금융 데이터를 불러오는 데 초점이 있습니다. Daon은 영수증, 캡처, 종이 증빙처럼 흩어진 비정형 자료를 정산 가능한 데이터로 바꾸는 데 집중합니다.
+
+**Q. AI가 잘못 읽으면 어떻게 하나요?**  
+완전 자동 처리가 아니라 AI 초안과 사용자 확인 구조로 설계합니다. 사용자는 모든 항목을 처음부터 입력하지 않고, 이상한 부분만 수정합니다.
+
+**Q. 수익 모델은 무엇인가요?**  
+개인은 무료 또는 저가 구독으로 시작하고, 팀 정산과 프리랜서/소상공인 증빙 관리 기능은 월 구독형으로 확장할 수 있습니다. 장기적으로는 세무/회계 도구 연동도 가능합니다.
+
+**Q. 시장성이 있나요?**  
+정산과 비용 증빙은 특정 세대나 업종에만 있는 문제가 아닙니다. 동아리, 해커톤 팀, 프리랜서, 소상공인, 회사 팀 단위까지 반복적으로 발생하는 문제라 확장 가능한 사용처가 있습니다.
+
+## 발표 구조 추천
+
+1. 공감 장면: "정산할 때 영수증 사진이 단톡방에 쌓입니다."
+2. 문제 정의: "문제는 영수증 보관이 아니라, 다시 입력해야 한다는 점입니다."
+3. 해결책: "Daon은 영수증을 비용 데이터로 바꿉니다."
+4. 데모: 업로드, AI 추출, 승인, 리포트 흐름을 보여줍니다.
+5. 비즈니스 가치: 시간 절감, 누락 감소, 팀 정산 신뢰도, 확장 시장을 말합니다.
+6. 마무리: "Daon은 귀찮은 정산을 사람이 입력하는 일에서 AI가 준비하고 사람이 승인하는 일로 바꿉니다."
+
+## 현재 구현
+
+현재 저장소는 아이디어 데모를 위한 Next.js 기반 웹 애플리케이션입니다.
+
+- Next.js App Router
+- React, TypeScript
+- Tailwind CSS
+- Hono 기반 API 라우팅
+- Supabase 인증 연동 구조
+- Drizzle ORM 데이터베이스 구성
+- 데모용 영수증 분석 화면
+
+## 실행 방법
 
 ```bash
-bun db:push        # 개발 중 빠르게 반영 (마이그레이션 파일 없이)
-bun db:generate    # 마이그레이션 파일 생성
-bun db:migrate     # 마이그레이션 실행
-bun db:studio      # Drizzle Studio (DB GUI)
+bun install
+cp .env_example .env
+bun dev
 ```
 
-쿼리 예시:
+Supabase를 사용하는 경우 `.env`에 다음 값을 채워야 합니다.
 
-```typescript
-import { db } from '@/db'
-import { users, posts } from '@/db/schema'
-import { eq } from 'drizzle-orm'
-
-// 전체 조회
-const allUsers = await db.select().from(users)
-
-// 조건 조회
-const user = await db.select().from(users).where(eq(users.id, userId))
-
-// 삽입
-await db.insert(posts).values({ title: '제목', authorId: user.id })
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ```
 
----
+## 피칭 핵심 문장
 
-## Vercel 배포 꿀팁
-
-- 베셀에 배포할때 install command 대신 bun install 빌드시간 비약적으로 단축
-
-- build command 대신 bun run build로 설정
-
-- 환경변수 3개 Vercel 대시보드에 동일하게 추가 필수
-
-## PC pattern : 장점들
-1.타입자동완성 + 에러자동탐지 @hono/zod-validator를 쓰면 잘못된 데이터를 보냈을 때 클라이언트가 백엔드에서 자동으로 에러를 잡아줌
-
-2.name을 nickname 으로 바꾸면 에러위치를 보여줌
-
-3.json 구조 자동파악 res.json() 다음에 .찍으면 서버가 보내주는 데이터 다알려줘서 api명세서 안봐도 데이터 타입파악가능
-
-4.export type AppType = typeof routes 만으로 백앤드와 프론트엔드 연결
-
-5.Edge Runtime 의 속도 : export const runtime = 'edge' 설정으로 반응속도가 빛의 속도임을 어필가능
-
-백엔드 코드가 곧 프론트엔드의 가이드라인이 되어, 소통 에러를 제로(0)로 만드는 기술
-
-## 생성과정
-
-1. Next.js 프로젝트 생성 (Bun 사용)
-bun create next-app my-hackathon-app --tailwind --typescript --eslint
-
-2. 핵심 라이브러리 한 번에 설치
-bun add hono @lucia-auth/adapter-postgresql drizzle-orm @supabase/supabase-js
-bun add -d drizzle-kit @types/bun
-
-3. UI 컴포넌트 라이브러리 초기화 (shadcn/ui)
-bunx shadcn-ui@latest init
-
-route.ts 에 hono 서버를 심음 : next.js에서 api가 돌아가게 만듦
-
-api.ts에 client를 정의 : 백앤드 타입을 프론트에드가 실시간으로 인지하게 (RPC) 설정
-
-## 핵심폴더
-app/ : Next.js 메인폴더 page.tsx : 첫 페이지 route.ts : 백엔드 모든 api 관리 layout.tsx : 모든 페이지에 적용되는 공통 레이아웃 ( 헤더, 푸터 ) gloabls.css : tailwind css 설정 및 공통 스타일
-
-lib/ : 전역에서 쓰이는 함수 모음(api.ts) api.ts 프론트에서 백엔드를 호출할때 쓰는 client 객체정의 public/ : 이미지, 폰트 등 정적 파일들이 들어감 node_modules/ : bun install로 생성된 라이브러리들 .next/ : 자동생성된 빌드 결과물들 bun dev, bun run build 할때마다 자동으로 갱신됨
-
-프로젝트 폴더 AGENTS.md : ai 어이스턴트에게 주는 지침서 CLAUDE.md : 클로드에게 주는 지침서
-
-package.json : 프로젝트 설정 파일 bun.lock : 번 패키지 잠금 파일
-
-next.config.ts : next.js 동작 방식 제어
-next-env.d.ts : next.js 타입 정의 파일 (자동으로 생성됨) postcss.config.mjs : postCSS 가 Tailwind CSS를 가공해줌
-
-tsconfig.json : 타입스크립트 컴파일 관련 규칙 eslint.config.mjs : 코드 보안관 오타가 날법한 코드를 잡아내서 노란색/빨간색 줄을 띄워줌
-
-bun db:push 명령어 하나로 DB를 생성가능 
+> Daon은 영수증을 저장하는 앱이 아니라, 영수증을 정산 가능한 비용 데이터로 바꾸는 서비스입니다. 그래서 사용자는 입력하지 않고 확인만 하게 됩니다.
